@@ -1,0 +1,13 @@
+{
+  "n_brutas": 140,
+  "n_validas": 124,
+  "n_removidas": 16,
+  "n_excluidas_idioma": 16,
+  "positivos": 106,
+  "negativos": 18,
+  "baixa_polaridade": 7,
+  "referencia_n": 119,
+  "referencia_negativos": 1,
+  "concordancia_estrelas": 0.8571428571428571,
+  "divergencias": 17
+}
