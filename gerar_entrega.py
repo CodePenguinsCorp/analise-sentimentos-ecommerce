@@ -7,6 +7,7 @@ import json
 import textwrap
 import zipfile
 import importlib.metadata
+from string import Template
 
 import matplotlib
 matplotlib.use('Agg')
@@ -19,6 +20,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 import analise as a
 
 BASE = a.BASE
+IDENTIFICACAO = '**Instituição:** Católica de Santa Catarina\n\n**Disciplina:** Ciência de Dados\n\n**Professor:** Claudinei Dias (Ney)\n\n**Integrantes:** André Schultz; José Henrique Brühmüller; Lucas Monich Nunes; Matheus Büsemayer.'
 OUT = BASE / 'resultados'
 OUT.mkdir(exist_ok=True)
 brutas = pd.read_csv(BASE / 'dados' / 'avaliacoes_brutas.csv')
@@ -178,6 +180,8 @@ fontes = '''- Loja e páginas de avaliações: https://www.thomann.pt/superlux_h
 
 md = f'''# Web scraping e análise de sentimentos em produtos de e-commerce
 
+{IDENTIFICACAO}
+
 **Loja:** Thomann Portuguesa | **Coleta:** {data_coleta} (America/Sao_Paulo)
 **Datas dos comentários na amostra:** {inicio} a {fim}.
 
@@ -227,6 +231,7 @@ h1{{font-size:40px;line-height:1.15;color:#133c42}}h2{{margin-top:40px;color:#18
 table{{border-collapse:collapse;width:100%;font-size:14px}}th,td{{padding:10px;border-bottom:1px solid #dde4e6;text-align:left}}th{{background:#edf5f2}}.scroll{{overflow:auto}}img{{width:100%;height:auto;margin:15px 0}}
 .note{{border-left:4px solid #c59145;background:#fff6e9;padding:16px}}a{{color:#187864}}footer{{font-size:13px;margin-top:40px;overflow-wrap:anywhere}}
 </style><main><div class="eyebrow">CIÊNCIA DE DADOS · ESTUDO APLICADO</div><h1>O que os comentários dizem<br>sobre três fones de ouvido?</h1>
+{paragrafos(IDENTIFICACAO.replace('**', ''))}
 <p>Web scraping e análise de sentimentos · Thomann Portuguesa · Coleta em {data_coleta}</p><div class="cards">{cards}</div>
 <p class="note">Resultados da amostra coletada. A classificação é automática; a comparação com estrelas usa rótulos aproximados, sem validação humana.</p>
 <h2>Resultados</h2>{imagem('sentimentos.png')}<div class="scroll">{resumo.round(3).to_html()}</div>
@@ -246,14 +251,20 @@ imports=source[:source.index('\ndef classificar')].replace('Path(__file__).resol
 cells=[]
 def markdown(t):cells.append(nbf.v4.new_markdown_cell(textwrap.dedent(t).strip()))
 def code(t):cells.append(nbf.v4.new_code_cell(textwrap.dedent(t).strip()))
-markdown(f'''# Web scraping e análise de sentimentos: Thomann Portuguesa
+markdown(f'''# Análise de sentimentos em produtos de e-commerce
+
+Atividade de Ciência de Dados.
+
+{IDENTIFICACAO}
+
 **Objetivo:** coletar produtos e comentários, identificar sentimento Positivo/Negativo e apresentar insights.
 
 Coleta: **{data_coleta}**. Entrega com dados reais coletados e resultados executados.
-Abra este notebook na pasta do projeto, junto de `dados`.
-As células usam o cache HTML incluído e não precisam de internet para reproduzir esta coleta.
-Instalação, se necessário: `%pip install -r requirements.txt` (executar em célula própria).
+No Colab, escolha **Ambiente de execução > Executar tudo**: a primeira célula baixa os arquivos do projeto quando necessário e instala dependências ausentes.
+Localmente, abra este notebook na raiz do projeto. Após obter os arquivos, as células usam o cache HTML incluído para reproduzir a coleta sem acessar a loja.
 Não há treinamento nesta abordagem; LeIA é uma linha de base lexical para português, com limitações demonstradas nesta amostra.''')
+markdown('## Preparação do ambiente\nNo Colab, esta célula obtém os arquivos complementares do repositório público. Localmente, verifica a pasta de execução. O código não modifica o repositório remoto.')
+code((BASE / 'preparar_notebook.py').read_text(encoding='utf-8') + '\n\npreparar_ambiente()')
 markdown('## 1. Escolha da loja, amostragem e método\n'+metodo)
 code(imports)
 markdown('## 2. Extração do HTML com BeautifulSoup\nCada bloco `.js-review` contém título, texto original, idioma e estrelas. A data é extraída sem exportar o nome do autor para o CSV. A nota vem da largura percentual das estrelas preenchidas.')
@@ -284,85 +295,19 @@ nbf.write(nb,nbpath)
 
 deps=['requests','beautifulsoup4','pandas','langdetect','matplotlib','scikit-learn','nbformat','nbclient','ipykernel','tzdata']
 (BASE/'requirements.txt').write_text('\n'.join(f'{p}=={importlib.metadata.version(p)}' for p in deps)+'\n',encoding='utf-8')
-(BASE/'README.md').write_text(f"""# Análise de sentimentos em e-commerce — português
-
-Web scraping com BeautifulSoup e análise de avaliações originais em português da
-**Thomann Portuguesa**, usando o classificador lexical **LeIA**.
-
-## Resultados da coleta de {data_coleta}
-
-- {m['n_brutas']} avaliações extraídas de 16 páginas sobre três fones.
-- {m['n_excluidas_idioma']} excluídas na verificação adicional de idioma.
-- **{m['n_validas']} comentários analisados:** {m['positivos']} classificados como positivos e {m['negativos']} como negativos.
-- {m['baixa_polaridade']} casos de baixa polaridade sinalizados para revisão.
-
-![Distribuição dos sentimentos](resultados/sentimentos.png)
-
-**Os percentuais descrevem a classificação automática.** Há erros lexicais demonstrados
-no relatório e a concordância com estrelas é inferior à referência de prever sempre
-positivo. As estrelas são rótulos fracos, com forte desbalanceamento, e não houve
-validação por anotadores humanos. Não interprete estes números como taxa de insatisfação.
-
-## Entregas
-
-- [Notebook com código e saídas executadas](Analise_Sentimentos_Ecommerce.ipynb)
-- [Relatório em Markdown](resultados/RELATORIO.md)
-- [Relatório HTML autossuficiente](resultados/RELATORIO.html): baixe e abra no navegador.
-- [Comentários classificados](dados/avaliacoes_classificadas.csv)
-- [Auditoria do idioma](dados/auditoria_idioma.csv)
-- [Manifesto das páginas, horários e hashes](dados/manifesto.json)
-
-## Reprodução
-
-Python 3.13, em um ambiente virtual, na raiz do projeto:
-
-```bash
-python -m pip install -r requirements.txt
-python verificar.py
-python analise.py
-python gerar_entrega.py
-```
-
-O notebook também pode ser aberto pelo VS Code ou Jupyter. Preserve as pastas `dados`,
-`vendor` e `resultados` ao copiar o projeto. Com o cache incluído, a extração e a análise
-funcionam sem acessar a loja. O gerador executa o notebook, refaz gráficos e relatórios,
-e cria um ZIP de entrega ao lado da pasta do projeto. Para nova coleta, use uma cópia
-sem a pasta `dados/html`, preservando o snapshot entregue.
-
-## Método
-
-Filtro do site `reviewlang[]=6`, ordenação `order=latest`, até dez páginas por produto,
-parada em página incompleta, pausa de 1,5 s e interrupção em falha HTTP. A verificação
-adicional exige `pt` pelo langdetect (semente 0 e escore >= 0,8). A triagem pode excluir
-textos curtos genuinamente em português.
-
-O LeIA analisa título e comentário; as estrelas não são usadas para classificar.
-Saída binária: compound >= 0 é positivo e < 0 é negativo. |compound| < 0,05 é
-sinalizado. O escore não é uma probabilidade. Veja no notebook a correção explícita
-da entrada lexical `nao`, verificada com testes de negação.
-
-## Estrutura
-
-- `analise.py`: coleta, extração, idioma, classificação e agregações.
-- `verificar.py`: verificações locais do extrator, negações e idioma.
-- `gerar_entrega.py`: gráficos, notebook executado e relatórios.
-- `dados/html`: páginas e metadados da coleta; arquivos públicos podem conter nomes
-  dos autores, embora esses nomes não sejam exportados aos CSVs.
-- `vendor`: LeIA e léxicos, com licença MIT, commit de origem e adaptações documentadas.
-
-## Fontes e licenças
-
-- [Thomann Portuguesa](https://www.thomann.pt/): URLs específicas no manifesto.
-- [LeIA — Rafael J. A. Almeida, 2018](https://github.com/rafjaa/LeIA): licença MIT e
-  origem em `vendor/ORIGEM.md`. Dois `open()` receberam encoding UTF-8 explícito.
-- [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
-- [langdetect](https://pypi.org/project/langdetect/)
-
-Os dados e comentários continuam sujeitos aos direitos de seus autores e da fonte;
-a licença do LeIA não licencia as avaliações. Este trabalho é um estudo didático,
-sem vínculo com a loja ou os fabricantes. Os materiais da atividade foram usados
-como referência; não se copiou seu exemplo de treinamento supervisionado.
-""",encoding='utf-8')
+linhas = ['| Produto | Comentários | Positivos | Negativos | % positivo |', '|---|---:|---:|---:|---:|']
+for produto, row in resumo.iterrows():
+    percentual = f"{row['percentual_positivo']:.1f}%".replace('.', ',')
+    linhas.append(f"| {produto} | {int(row['avaliacoes'])} | {int(row['positivos'])} | {int(row['negativos'])} | {percentual} |")
+texto_readme = Template((BASE / 'docs' / 'README.template.md').read_text(encoding='utf-8')).substitute(
+    data_coleta=data_coleta, n_brutas=m['n_brutas'], n_excluidas=m['n_excluidas_idioma'],
+    n_validas=m['n_validas'], baixa_polaridade=m['baixa_polaridade'], positivos=m['positivos'],
+    negativos=m['negativos'], resumo_produtos='\n'.join(linhas), referencia_n=m['referencia_n'],
+    referencia_negativos=m['referencia_negativos'],
+    concordancia=f"{m['concordancia_estrelas']:.1%}".replace('.', ','),
+    baseline=f"{(m['referencia_n']-m['referencia_negativos'])/m['referencia_n']:.1%}".replace('.', ','),
+)
+(BASE / 'README.md').write_text(texto_readme, encoding='utf-8')
 
 with zipfile.ZipFile(BASE.parent/'Analise_Sentimentos_Ecommerce_PT.zip','w',zipfile.ZIP_DEFLATED) as z:
     for p in BASE.rglob('*'):

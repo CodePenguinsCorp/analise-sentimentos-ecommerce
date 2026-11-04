@@ -1,5 +1,13 @@
 # Web scraping e análise de sentimentos em produtos de e-commerce
 
+**Instituição:** Católica de Santa Catarina
+
+**Disciplina:** Ciência de Dados
+
+**Professor:** Claudinei Dias (Ney)
+
+**Integrantes:** André Schultz; José Henrique Brühmüller; Lucas Monich Nunes; Matheus Büsemayer.
+
 **Loja:** Thomann Portuguesa | **Coleta:** 03/11/2026 (America/Sao_Paulo)
 **Datas dos comentários na amostra:** 20/01/2016 a 15/09/2026.
 

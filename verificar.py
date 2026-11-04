@@ -1,5 +1,9 @@
 """Verificação mínima do extrator e da classificação, sem acessar a rede."""
 from analise import extrair_avaliacoes, classificar, identificar_idioma
+from preparar_notebook import preparar_ambiente
+from pathlib import Path
+import os
+import tempfile
 
 html = '''<h1>Fone teste</h1><div class="js-review" data-rating-id="123">
 <span class="js-headline-original">Excelente!</span>
@@ -23,3 +27,21 @@ assert identificar_idioma('Este produto tem excelente qualidade de som e gostei 
 assert identificar_idioma('These headphones are very comfortable and the sound quality is excellent.')['idioma_detectado'] == 'en'
 assert classificar('Auscultadores.')['baixa_polaridade']
 print('OK: extração, nota, data, texto original, negação e baixa polaridade.')
+
+origem = Path.cwd()
+try:
+    os.chdir(Path(__file__).resolve().parent)
+    assert preparar_ambiente(em_colab=False) == Path.cwd()
+    with tempfile.TemporaryDirectory() as pasta:
+        os.chdir(pasta)
+        try:
+            preparar_ambiente(em_colab=False)
+        except RuntimeError as erro:
+            assert 'raiz do projeto' in str(erro)
+        else:
+            raise AssertionError('O notebook deve orientar quem abriu uma pasta incompleta.')
+        finally:
+            os.chdir(Path(__file__).resolve().parent)
+finally:
+    os.chdir(origem)
+print('OK: preparação local e orientação para uma pasta incompleta.')
