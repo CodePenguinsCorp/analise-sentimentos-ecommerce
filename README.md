@@ -10,7 +10,7 @@ Atividade de Ciência de Dados: web scraping de produtos e classificação de co
 
 **Professor:** Claudinei Dias (Ney)
 
-**Integrantes:** André Schultz; José Henrique Brühmüller; Lucas Monich Nunes; Matheus Büsemayer.
+**Integrantes:** André Schultz; José Henrique Brühmüller; Lucas Monich Nunes.
 
 ## Trabalho principal
 

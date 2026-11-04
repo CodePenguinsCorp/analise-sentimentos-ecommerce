@@ -20,7 +20,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 import analise as a
 
 BASE = a.BASE
-IDENTIFICACAO = '**Instituição:** Católica de Santa Catarina\n\n**Disciplina:** Ciência de Dados\n\n**Professor:** Claudinei Dias (Ney)\n\n**Integrantes:** André Schultz; José Henrique Brühmüller; Lucas Monich Nunes; Matheus Büsemayer.'
+IDENTIFICACAO = '**Instituição:** Católica de Santa Catarina\n\n**Disciplina:** Ciência de Dados\n\n**Professor:** Claudinei Dias (Ney)\n\n**Integrantes:** André Schultz; José Henrique Brühmüller; Lucas Monich Nunes.'
 OUT = BASE / 'resultados'
 OUT.mkdir(exist_ok=True)
 brutas = pd.read_csv(BASE / 'dados' / 'avaliacoes_brutas.csv')
